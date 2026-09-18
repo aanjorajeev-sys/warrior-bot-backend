@@ -266,9 +266,41 @@ setInterval(() => {
 }, 60 * 1000);
 
 // ================================
-// START SERVER
+// TEMPORARY ROLE TEST
 // ================================
 
-app.listen(PORT, () => {
-  console.log(`🌐 Warrior Bot backend running on port ${PORT}`);
+app.get("/test-role", async (req, res) => {
+  try {
+    const TEST_KEY = process.env.ROLE_TEST_KEY;
+
+    if (!TEST_KEY || req.query.key !== TEST_KEY) {
+      return res.status(403).json({
+        success: false,
+        message: "Forbidden"
+      });
+    }
+
+    const userId = "1359396381281746995";
+
+    const guild = await bot.guilds.fetch(GUILD_ID);
+    const member = await guild.members.fetch(userId);
+
+    await member.roles.remove(UNVERIFIED_ROLE_ID);
+    await member.roles.add(VERIFIED_ROLE_ID);
+    await member.roles.add(MEMBER_ROLE_ID);
+
+    res.json({
+      success: true,
+      message: "Roles updated successfully!",
+      userId: userId
+    });
+
+  } catch (error) {
+    console.error("Role test error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
 });
